@@ -1,0 +1,11 @@
+ HW#3 [Mini Project, Due: 16 April, 2018] 
+
+1.	You need to state and verify the obvious safety and liveness properties (see the second reference) and also the self-stabilization 		property (also called convergence in the second reference) of the algorithm.
+
+2.	You should try to verify the algorithm for four processes, and then see what happens when you increase the number of processes.
+
+3.	You should think about the fairness assumptions that are necessary for the verification.
+
+4.	For extra credit, model and verify the synchronous version of the algorithm, where all processes execute their steps in a lock-step 		fashion.
+
+5.	You will be required to give a demo to the TAs and answer questions about your work
