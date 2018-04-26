@@ -1,0 +1,66 @@
+-- Module for process 0
+MODULE proc0(current, last)
+	ASSIGN
+		next(current) := 
+			case
+				current = last : (current + 1) mod 7;
+				TRUE : current;
+			esac;
+
+
+
+-- Module for all processes other than 0
+MODULE proc(current, previous)
+	ASSIGN
+		next(current) := 
+			case
+				current != previous : previous;
+				TRUE : current;
+			esac;
+
+
+MODULE main
+	VAR
+		states : array 0..3 of 0..6;
+		proc0 : proc0(states[0],states[3]);
+		proc1 : proc(states[1],states[0]);
+		proc2 : proc(states[2],states[1]);
+		proc3 : proc(states[3],states[2]);
+		
+	ASSIGN
+		init(states[0]) := 2;
+		init(states[1]) := 4;
+		init(states[2]) := 5;
+		init(states[3]) := 1;
+
+	---- Self-stabilization(Convergence) Property Specification -> Only a single guard is enabled eventually after system -- reaches a legal configuration i.e converges
+	LTLSPEC F ((states[0] = states[3]) & (states[1]=states[0]) & (states[2]=states[1]) & (states[3]=states[2])) | 
+				((states[0] != states[3]) & (states[1] != states[0]) & (states[2] = states[1]) & (states[3] = states[2])) |
+				((states[0] != states[3]) & (states[1] = states[0]) & (states[2] != states[1]) &(states[3] = states[2])) | 
+				((states[0] != states[3]) & (states[1] = states[0]) & (states[2] = states[1]) & (states[3] != states[2]));
+
+	-- Another self-stabilization specification
+	-- LTLSPEC G F (states[0] = states[1] & states[1] = states[2] & states[2] = states[3]);
+
+
+	-- Liveness Property Specification -> The guard of each process is enabled infinitely often
+	LTLSPEC (G F (states[0] = states[3]) & G F (states[1] != states[0]) & G F (states[2] != states[1]) & G F states[3] != states[2]);
+
+	-- Safety Property Specification
+	-- Sometime in the future, legal config condition & always(legal config condition -> next step(legal config condition)
+	LTLSPEC 
+	( (
+		((states[0] = states[3]) & (states[1] = states[0]) & (states[2]=states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] != states[0]) & (states[2] = states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] = states[0]) & (states[2] != states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] = states[0]) & (states[2] = states[1]) & (states[3] != states[2]))
+	) 
+	->  (F G(
+	(
+		((states[0] = states[3]) & (states[1] = states[0]) & (states[2] = states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] != states[0]) & (states[2] = states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] = states[0]) & (states[2] != states[1]) & (states[3] = states[2])) | 
+		((states[0] != states[3]) & (states[1] = states[0]) & (states[2] = states[1]) & (states[3] != states[2]))
+	) )
+	
+	));
